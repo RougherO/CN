@@ -1,0 +1,14 @@
+Checks: clang-analyzer-*, clang-*,
+        # cppcoreguidelines-*, -cppcoreguidelines-pro-bounds-pointer-arithmetic, -cppcoreguidelines-special-member-functions, -cppcoreguidelines-avoid-magic-numbers,
+        # modernize-*, 
+        # performance-*, 
+        # readability-*, -readability-identifier-length, -readability-magic-numbers, -readability-implicit-bool-conversion,
+        # concurrency-*, 
+        # portability-*, 
+        # bugprone-*,
+        # boost-*
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+FormatStyle: "file"
+# CheckOptions:
