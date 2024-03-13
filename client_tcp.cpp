@@ -1,8 +1,6 @@
 #include <array>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
 #include <string>
+#include <thread>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -14,10 +12,38 @@
 #define TCP
 #include "Global.hpp"
 
+void reader(int32_t client_socket)
+{
+    std::array<char, _BUF_SIZE_> read_buffer;
+    for (int32_t numOfBytes;;) {
+        numOfBytes = recv(client_socket, read_buffer.data(), _BUF_SIZE_, 0);
+        if (numOfBytes == -1) {
+            LogToStdErrAndTerminate("Could not receive complete message");
+        } else if (numOfBytes == 0) {
+            break;
+        }
+        LogToStdOut("Message from server: ", "");
+        LogToStdOut(read_buffer.data(), numOfBytes);
+    }
+}
+
+void writer(int32_t client_socket)
+{
+    std::array<char, _BUF_SIZE_> write_buffer;
+    for (int32_t numOfBytes { -1 };;) {
+        numOfBytes = LogFromStdIn(write_buffer.data(), _BUF_SIZE_);
+        numOfBytes = send(client_socket, write_buffer.data(), numOfBytes, 0);
+        if (numOfBytes == -1) {
+            LogToStdErrAndTerminate("Could not send message");
+        }
+    }
+}
+
 int32_t main(int32_t argc, char** argv)
 {
-    if (argc != 4) {
-        LogToStdErrAndTerminate(std::string("Usage: ") + argv[0] + " <IP> <PORT> <MESSAGE>");
+
+    if (argc != 3) {
+        LogToStdErrAndTerminate(std::string("Usage: ") + argv[0] + " <IP> <PORT>");
     }
 
     int32_t client_socket = socket(_SOCK_ADDR_TYPE_, _SOCK_PROTO_TYPE_, 0);
@@ -31,13 +57,11 @@ int32_t main(int32_t argc, char** argv)
         LogToStdErrAndTerminate(std::string("Could not connect to server with IP: ") + argv[1] + " and PORT: " + argv[2]);
     }
 
-    size_t sizeOfMessage = std::strlen(argv[3]);
-    int32_t numOfBytes   = send(client_socket, argv[3], sizeOfMessage, 0);
+    std::thread recv_thread(reader, client_socket);
+    std::thread send_thread(writer, client_socket);
 
-    if (numOfBytes == -1) {
-        LogToStdErrAndTerminate("Could not send message");
-    }
+    recv_thread.join();
+    send_thread.join();
 
-    LogToStdOut("Sent " + std::to_string(numOfBytes) + " bytes of data to server");
     close(client_socket);
 }

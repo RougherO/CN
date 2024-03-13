@@ -1,19 +1,22 @@
 #ifndef LOGGER
 #define LOGGER
 
-#include <cstdlib>
 #include <initializer_list>
 #include <iostream>
 
-void LogToStdOut(char* const message, size_t size)
+void LogToStdOut(char const* message, size_t size, char const* delim = "\n")
 {
-    std::cout.write(message, size);
-    std::cout << std::endl;
+    std::cout.write(message, size) << delim << std::ends;
 }
 
-void LogToStdOut(std::string const& message)
+int32_t LogFromStdIn(char* message_ptr, size_t size)
 {
-    std::cout << message << std::endl;
+    return std::cin.getline(message_ptr, size).gcount();
+}
+
+void LogToStdOut(std::string const& message, char const* delim = "\n")
+{
+    std::cout << message << delim << std::ends;
 }
 
 void LogToStdErr(std::string const& message)
